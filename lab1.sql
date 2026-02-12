@@ -27,4 +27,10 @@ values (
 '0010','Ramesh','Rai','M','2000-04-02','Manager',
 'Software Engineering', '0003','2022-04-02','1000000'
 );
-select * from employee;
+select * from employee
+where FirstName like 's%';
+select*from employee
+where FirstName like '%n';
+select *from employee
+where FirstName like 's%n';
+
