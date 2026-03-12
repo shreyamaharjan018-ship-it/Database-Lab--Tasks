@@ -42,10 +42,29 @@ CREATE TABLE ClassAttendance (
     FOREIGN KEY (MembershipNo) REFERENCES Member(MembershipNo),
     FOREIGN KEY (ClassCode) REFERENCES Class(ClassCode)
 );
+
+CREATE TABLE Facility (
+    FacilityId INT(10) PRIMARY KEY,
+    FacilityName VARCHAR(255),
+    MaxCapacity INT(10),
+    supportedactivity INT(10)
+);
+
+
+CREATE TABLE FacilityBooking (
+    BookingId INT(10) PRIMARY KEY,
+    Date DATE,
+    StartTime TIME,
+    EndTime TIME,
+    MembershipNo INT(10),
+    FacilityId INT(10),
+    FOREIGN KEY (FacilityId) REFERENCES Facility(FacilityId)
+);
 INSERT INTO FitnessStaff (StaffNumber, FirstName, LastName, Role, ContactNo) VALUES
 (101, 'Alice', 'Shrestha', 'Yoga Instructor','9841233200'),
 (102, 'Bob', 'Joshi', 'Personal Trainer','984713320'),
 (103, 'Charlie', 'Bista', 'Zumba Instructor','9874563210');
+
 INSERT INTO Member (MembershipNo, FirstName, LastName, Address, Telephone, Email, DOB, MedicalCondition, WeeklySubscriptionFee) VALUES
 (501, 'Aarav', 'Sharma', 'New Baneshwor, Kathmandu', 98412345, 'aaravsharma@email.com', '1990-05-15', 'None', 10),
 (502, 'Binita', 'Thapa', 'Jhamsikhel, Lalitpur', 98510678, 'binitathapa@email.com', '1985-11-20', 'Asthma', 10),
@@ -81,6 +100,25 @@ INSERT INTO Class (ClassCode, ClassName, Day, StartTime, EndTime, MaxClassSize, 
 VALUES (3001, 'Power Lifting', 'Friday', '16:00:00', '17:30:00', 10, 101);
 INSERT INTO ClassAttendance (AttendanceDate, WeekNumber, Status, AdditionalFeePaid, MembershipNo, ClassCode) 
 VALUES ('2026-03-06', 10, 'Attended', 0, 500, 3001);
+
+INSERT INTO Facility (FacilityId, FacilityName, MaxCapacity, supportedactivity) 
+VALUES (1, 'Main Swimming Pool', 25, 101),
+ (2, 'Yoga Studio', 15, 102);
+ INSERT INTO FacilityBooking (BookingId, Date, StartTime, EndTime, MembershipNo, FacilityId)
+VALUES (5001, '2026-03-20', '09:00:00', '10:30:00', 8822, 1),
+(5002, '2026-03-20', '14:00:00', '15:00:00', 9933, 2);
+# facility booked by member
+SELECT 
+    fb.MembershipNo, 
+    f.FacilityName, 
+    fb.Date AS ActivityDate, 
+    ca.Status AS AttendanceStatus
+FROM FacilityBooking fb
+JOIN Facility f 
+    ON fb.FacilityId = f.FacilityId
+LEFT JOIN ClassAttendance ca 
+    ON fb.MembershipNo = ca.MembershipNo 
+    AND fb.Date = ca.AttendanceDate;
 #Calculate Revenue (Base Fee + Extra Classes)
 SELECT 
     Member.FirstName, 
@@ -110,3 +148,17 @@ SELECT Class.ClassName, Class.Day, Class.StartTime, FitnessStaff.FirstName
 FROM Class
 INNER JOIN FitnessStaff ON Class.StaffNumber = FitnessStaff.StaffNumber
 WHERE FitnessStaff.StaffNumber = 101;
+SELECT 
+    m.FirstName, 
+    m.LastName, 
+    COUNT(a.AttendanceID) AS Total_Classes_Attended
+FROM Member m
+JOIN ClassAttendance a ON m.MembershipNo = a.MembershipNo
+GROUP BY m.MembershipNo, m.FirstName, m.LastName
+HAVING COUNT(a.AttendanceID) > 5;
+#list of member
+SELECT * FROM Member;
+#member having medical condition
+SELECT FirstName, LastName, MedicalCondition 
+FROM Member 
+WHERE MedicalCondition != 'None';
